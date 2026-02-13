@@ -33,11 +33,25 @@ function mapCampaign(c) {
 }
 
 // Map backend clip to frontend shape
+// function mapClip(c) {
+//   return {
+//     id: c.clipId || c._id,
+//     campaignId: c.campaignId,
+//     link: c.clipLink,
+//     platform: detectPlatform(c.clipLink || ''),
+//     submittedAt: new Date(c.submittedAt || c.createdAt).getTime(),
+//     views: c.views || 0,
+//     earnings: c.earnings || 0,
+//     status: c.status === 'approved' ? 'approved' : c.status === 'flagged' ? 'rejected' : 'pending',
+//   }
+// }
+//mapclip to show creator description
 function mapClip(c) {
   return {
     id: c.clipId || c._id,
     campaignId: c.campaignId,
     link: c.clipLink,
+    creatorMessage: c.creatorMessage || '',
     platform: detectPlatform(c.clipLink || ''),
     submittedAt: new Date(c.submittedAt || c.createdAt).getTime(),
     views: c.views || 0,
@@ -45,6 +59,7 @@ function mapClip(c) {
     status: c.status === 'approved' ? 'approved' : c.status === 'flagged' ? 'rejected' : 'pending',
   }
 }
+
 
 function detectPlatform(link) {
   if (link.includes('instagram')) return 'Instagram'
@@ -131,10 +146,21 @@ export function CampaignProvider({ children }) {
     setJoinedCampaigns(prev => prev.filter(x => x !== id))
   }, [])
 
-  const submitClip = useCallback(async (campaignId, link) => {
-    const data = await clipsAPI.submit({ campaignId, clipLink: link })
+  // const submitClip = useCallback(async (campaignId, link) => {
+  //   const data = await clipsAPI.submit({ campaignId, clipLink: link })
+  //   setClips(prev => [...prev, mapClip(data.clip)])
+  // }, [])
+
+  const submitClip = useCallback(async (campaignId, link, creatorMessage) => {
+    const data = await clipsAPI.submit({
+      campaignId,
+      clipLink: link,
+      creatorMessage
+    })
+
     setClips(prev => [...prev, mapClip(data.clip)])
   }, [])
+
 
   const refreshClips = useCallback(async () => {
     try {

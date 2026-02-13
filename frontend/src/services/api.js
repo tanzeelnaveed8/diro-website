@@ -1,4 +1,7 @@
-const API_BASE = '/api';
+
+
+//frontend/src/services/api.js
+const API_BASE = 'http://localhost:3000/api';
 
 function getToken() {
   const stored = localStorage.getItem('diro_user');
@@ -10,32 +13,69 @@ function getToken() {
   }
 }
 
+// async function request(endpoint, options = {}) {
+//   const token = getToken();
+//   const headers = { 'Content-Type': 'application/json', ...options.headers };
+
+//   // const headers = { ...options.headers };
+
+//   // 2. ONLY add JSON content-type if the body isn't FormData
+//   // const isFormData = options.body instanceof FormData;
+//   // if (!isFormData) {
+//   //   headers['Content-Type'] = 'application/json';
+//   // }
+
+//   if (token) {
+//     headers['Authorization'] = `Bearer ${token}`;
+//   }
+
+//   const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
+//   const data = await res.json();
+
+//   if (!res.ok) {
+//     // Handle validation errors with multiple messages
+//     let errorMessage = data.error || data.message || 'Request failed';
+//     if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
+//       errorMessage = data.messages.join('; ');
+//     }
+//     const error = new Error(errorMessage);
+//     error.status = res.status;
+//     error.data = data;
+//     throw error;
+//   }
+
+//   return data;
+// }
+
+// Auth
+
 async function request(endpoint, options = {}) {
   const token = getToken();
-  const headers = { 'Content-Type': 'application/json', ...options.headers };
+  const headers = { ...options.headers };
+
+  // If it's FormData, DELETE the Content-Type so the browser sets it with the boundary
+  if (options.body instanceof FormData) {
+    delete headers['Content-Type'];
+  } else {
+    headers['Content-Type'] = 'application/json';
+  }
+
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
   const res = await fetch(`${API_BASE}${endpoint}`, { ...options, headers });
-  const data = await res.json();
-
+  // Handle errors specifically
   if (!res.ok) {
-    // Handle validation errors with multiple messages
-    let errorMessage = data.error || data.message || 'Request failed';
-    if (data.messages && Array.isArray(data.messages) && data.messages.length > 0) {
-      errorMessage = data.messages.join('; ');
-    }
-    const error = new Error(errorMessage);
+    const data = await res.json().catch(() => ({}));
+    const error = new Error(data.error || data.message || 'Request failed');
     error.status = res.status;
-    error.data = data;
     throw error;
   }
 
-  return data;
+  return res.json();
 }
 
-// Auth
 export const authAPI = {
   login: (email, password, role) =>
     request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password, role }) }),
@@ -63,8 +103,16 @@ export const campaignsAPI = {
     return request(`/campaigns${qs ? `?${qs}` : ''}`);
   },
   get: (campaignId) => request(`/campaigns/${campaignId}`),
-  create: (data) =>
-    request('/campaigns', { method: 'POST', body: JSON.stringify(data) }),
+  // create: (data) =>
+  //   request('/campaigns', { method: 'POST', body: JSON.stringify(data) }),
+
+  create: (data) => {
+    // If data is already FormData from the component, pass it as-is.
+    // If it's a plain object, stringify it.
+    const body = data instanceof FormData ? data : JSON.stringify(data);
+    return request('/campaigns', { method: 'POST', body });
+  },
+
   update: (campaignId, data) =>
     request(`/campaigns/${campaignId}`, { method: 'PUT', body: JSON.stringify(data) }),
   updateStatus: (campaignId, status) =>

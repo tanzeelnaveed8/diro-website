@@ -1,3 +1,6 @@
+
+////backend/src/models/clip.js
+
 const mongoose = require('mongoose');
 
 const clipSchema = new mongoose.Schema({
@@ -36,9 +39,14 @@ const clipSchema = new mongoose.Schema({
       message: 'Timestamps must be in HH:MM:SS format'
     }
   },
-  editsDescription: {
+  // editsDescription: {
+  //   type: String,
+  //   trim: true
+  // },
+  creatorMessage: {
     type: String,
-    trim: true
+    trim: true,
+    maxlength: 1000
   },
   views: {
     type: Number,

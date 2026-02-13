@@ -12,7 +12,9 @@ const CreateCampaign = () => {
     cpm: '',
     totalBudget: '',
     minViewsForPayout: '',
+    currency: 'USD', // NEW: Added currency state
   });
+  //const [logo, setLogo] = useState(null); 
   const [sourceVideoUrls, setSourceVideoUrls] = useState(['']);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -20,6 +22,16 @@ const CreateCampaign = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  //Handle Logo Selection
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.size > 2 * 1024 * 1024) { // 2MB Limit check
+      setError("Logo file size should be less than 2MB");
+      return;
+    }
+    setLogo(file);
   };
 
   const handleVideoUrlChange = (index, value) => {
@@ -57,6 +69,8 @@ const CreateCampaign = () => {
         CPM: parseFloat(formData.cpm),
         deposit: parseFloat(formData.totalBudget),
         minViewsForPayout: parseInt(formData.minViewsForPayout) || 0,
+        currency: formData.currency, // SENDING CURRENCY
+        //brandLogo: logo.name, // Usually you'd upload this to S3/Cloudinary first
       });
       navigate('/brand/dashboard');
     } catch (err) {
@@ -77,7 +91,26 @@ const CreateCampaign = () => {
         {error && <div style={{ background: 'rgba(220,53,69,0.1)', color: '#dc3545', border: '1px solid rgba(220,53,69,0.3)', borderRadius: '8px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</div>}
 
         <form className="campaign-form" onSubmit={handleSubmit}>
-          {/* Campaign Title */}
+          {/* 2. CURRENCY (Requirement: Select currency) */}
+          <div className="form-group">
+            <label htmlFor="currency" className="form-label">Campaign Currency <span className="required">*</span></label>
+            <select
+              id="currency"
+              name="currency"
+              className="form-input"
+              value={formData.currency}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="PKR">PKR (Rs)</option>
+              <option value="INR">INR (₹)</option>
+            </select>
+          </div>
+
+          {/* Campaign Title
           <div className="form-group">
             <label htmlFor="title" className="form-label">
               Campaign Title <span className="required">*</span>
@@ -93,7 +126,7 @@ const CreateCampaign = () => {
               required
               minLength={5}
             />
-          </div>
+          </div> */}
 
           {/* Description */}
           <div className="form-group">
@@ -157,6 +190,26 @@ const CreateCampaign = () => {
               required
             />
           </div>
+
+          {/* CurrencySelection */}
+          <div className="form-group">
+            <label htmlFor="currency" className="form-label">Campaign Currency <span className="required">*</span></label>
+            <select
+              id="currency"
+              name="currency"
+              className="form-input"
+              value={formData.currency}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="PKR">PKR (Rs)</option>
+              <option value="INR">INR (₹)</option>
+            </select>
+          </div>
+
 
           {/* CPM */}
           <div className="form-group">
