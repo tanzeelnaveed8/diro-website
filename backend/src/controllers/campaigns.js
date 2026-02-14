@@ -51,7 +51,8 @@ const createCampaign = async (campaignData, userId) => {
     deposit: Number(deposit),
     goalViews: Number(goalViews),
     currency,
-    brandLogo: brandLogo ? `/uploads/logos/${brandLogo}` : null,
+    // brandLogo: brandLogo ? `/uploads/logos/${brandLogo}` : null,
+    brandLogo: brandLogo || null, 
     sourceVideos: ['placeholder.mp4'], // You can update this later
     minViewsForPayout: 5000,
     status: 'pending'

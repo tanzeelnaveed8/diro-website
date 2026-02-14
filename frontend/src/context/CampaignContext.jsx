@@ -5,7 +5,34 @@ import { useAuth } from './AuthContext'
 const CampaignContext = createContext(null)
 
 // Map backend campaign to frontend shape
-function mapCampaign(c) {
+// function mapCampaign(c) {
+//   return {
+//     id: c.campaignId || c._id,
+//     name: c.title,
+//     avatar: null,
+//     time: c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '',
+//     type: 'Per view',
+//     title: c.title,
+//     socials: (c.platforms || ['Instagram', 'TikTok', 'YouTube', 'X']).map(p => p),
+//     pay: `$${c.CPM ? (c.CPM * 1000).toFixed(0) : '0'}`,
+//     cpm: c.CPM || 0,
+//     budget: c.deposit || 0,
+//     endsIn: c.status === 'completed' ? 'Ended' : 'Active',
+//     language: 'English',
+//     platforms: c.platforms || ['Instagram', 'TikTok', 'YouTube', 'X'],
+//     description: c.description || '',
+//     rules: c.rules || '',
+//     minViews: c.minViewsForPayout || 0,
+//     goalViews: c.goalViews || 0,
+//     status: c.status === 'live' ? 'Active' : c.status === 'pending' ? 'Pending' : c.status === 'completed' ? 'Completed' : c.status,
+//     paidOutPercent: 0,
+//     sourceVideos: c.sourceVideos || [],
+//     brandId: c.brandId,
+//     createdAt: c.createdAt,
+//   }
+// }
+
+function mapCampaign(c, userRole) {
   return {
     id: c.campaignId || c._id,
     name: c.title,
@@ -28,9 +55,12 @@ function mapCampaign(c) {
     paidOutPercent: 0,
     sourceVideos: c.sourceVideos || [],
     brandId: c.brandId,
+    brandLogo: c.brandLogo || null,               // ✅ always public
+    currency: userRole === 'admin' ? c.currency : undefined, // only admin can see
     createdAt: c.createdAt,
   }
 }
+
 
 // Map backend clip to frontend shape
 // function mapClip(c) {
@@ -86,12 +116,19 @@ export function CampaignProvider({ children }) {
   // Load campaigns from API
   useEffect(() => {
     if (!user) return
+    // campaignsAPI.list()
+    //   .then((data) => {
+    //     const mapped = (data.campaigns || []).map(mapCampaign)
+    //     setCampaigns(mapped)
+    //   })
+    //   .catch(() => {})
     campaignsAPI.list()
       .then((data) => {
-        const mapped = (data.campaigns || []).map(mapCampaign)
+        const mapped = (data.campaigns || []).map(c => mapCampaign(c, user?.role))
         setCampaigns(mapped)
       })
-      .catch(() => {})
+      .catch(() => { })
+
   }, [user])
 
   // Load clips from API
